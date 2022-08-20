@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+  <link href="https://fonts.googleapis.com/css?family=Abel" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css?family=Adamina"
+    rel="stylesheet"
+  />
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body id="body">
+    <div class="bigdiv">
+      <div class="timetable" id="timetable">
+        <div class="lectures" id="lectures">
+          <p>Lectures</p>
+        </div>
+        <hr />
+      </div>
+      <div class="center">
+        <div class="search">
+          <input
+            type="text"
+            id="gsearch"
+            placeholder="search something...."
+            name="gsearch"
+            style="border-radius: 2px"
+          />
+          <a href="https://www.google.com">search</a>
+        </div>
+        <div class="favsites hide">
+          <a href="https://www.google.com">google</a>
+          <a href="splash.com">splash</a>
+          <a href="shutterstock.com">shutterstock</a>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script src="https://unpkg.com/jquery.terminal/js/jquery.terminal.min.js"></script>
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/jquery.terminal/css/jquery.terminal.min.css"
+        />
+      </div>
+      <div class="todo">
+        <div class="todotasks" id="todotasks">
+          <p>ToDO</p>
+        </div>
+      </div>
+    </div>
+    <p hidden><%= objectid %></p>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://unpkg.com/jquery.terminal/js/jquery.terminal.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/jquery.terminal/css/jquery.terminal.min.css"
+    />
+  </body>
+  <script>
+    let objectid = "<%-objectid%>";
+
+    $("body").terminal(
+      {
+        addtt: function (lecture, lecturetime) {
+          
+          var ttdiv = document.createElement("div");
+          ttdiv.setAttribute("class", "ttdivclasses");
+          document.getElementById("lectures").appendChild(ttdiv);
+          var lecnamediv = document.createElement("div");
+          lecnamediv.setAttribute("class", "lecnameclasses");
+          var lectimediv = document.createElement("div");
+          lectimediv.setAttribute("class", "lectimeclasses");
+          ttdiv.appendChild(lecnamediv);
+          ttdiv.appendChild(lectimediv);
+
+          lecnamediv.innerHTML = lecture;
+          lectimediv.innerHTML = lecturetime;
+          console.log("appending");
+
+          //fetch request
+          const data = {
+            lec: lecture,
+            lectime: lecturetime,
+            objectid: objectid,
+          };
+
+          fetch("/shellcmd/timetable", {
+            method: "POST", // or 'PUT'
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log("Success:", data);
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        },
+        addtodo: function (task) {
+          var tododiv = document.createElement("div");
+          tododiv.setAttribute("class", "tododivclasses");
+          document.getElementById("todotasks").appendChild(tododiv);
+          tododiv.innerHTML = task;
+          console.log("appending");
+          const data = { todo: task };
+          fetch("/shellcmd/todos", {
+            method: "POST", // or 'PUT'
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log("Success:", data);
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        },
+        changetheme: (theme) => {
+          document.getElementById("body").style.background = "";
+          document.getElementById("body").classList.remove("green");
+          document.getElementById("body").classList.remove("orange");
+          document.getElementById("body").classList.add(theme);
+        },
+        showfavsites: () => {
+          document.querySelector(".favsites").classList.remove("hide")
+        },
+      },
+      {
+        greetings: "Make commands",
+      }
+    );
+    let rightPressed = false;
+    let leftPressed = false;
+    let left = false;
+    let right = false;
+    var centerdiv = document.querySelector(".center");
+    var terminal = document.querySelector(".terminal");
+
+    centerdiv.appendChild(terminal);
+
+    // function keypress() {
+      document.addEventListener("keydown", (e) => {
+        if (!e.target.classList.contains('favsites')){
+            if (e.key === "ArrowRight" || e.key === "d") {
+          rightPressed = true;
+        }
+        if (e.key === "ArrowLeft" || e.key === "a") {
+          leftPressed = true;
+        } 
+        }
+        
+      });
+      document.addEventListener("keyup", (e) => {
+        if (!e.target.classList.contains('favsites')){
+            if (e.key === "ArrowRight" || e.key === "d") {
+          rightPressed = false;
+        }
+        if (e.key === "ArrowLeft" || e.key === "a") {
+          leftPressed = false;
+        }
+        }
+        
+      });
+    // }
+
+    function anime() {
+      if (rightPressed) {
+        if (!right) {
+          console.log("right pressed");
+          document.querySelector(".todo").classList.add("todo1");
+          right = true;
+          return;
+        }
+        if (right) {
+          document.querySelector(".todo").classList.remove("todo1");
+          right = false;
+          return;
+        }
+      }
+      if (leftPressed) {
+        if (!left) {
+          console.log("left pressed");
+          document.querySelector(".timetable").classList.add("timetable1");
+          left = true;
+          return;
+        }
+        if (left) {
+          document.querySelector(".timetable").classList.remove("timetable1");
+          left = false;
+        }
+      }
+    }
+
+    setInterval(() => {
+    //   keypress();
+      anime();
+    }, 100);
+
+
+
+
+  </script>
+</html>
+
+<style>
+    .hide{
+        display:none
+    }
+  #body {
+    display: flex;
+    flex-direction: column;
+
+    background: linear-gradient(#4ecdc4, #556270);
+  }
+  .orange {
+    background: linear-gradient(#f79d00, #64f38c) !important ;
+  }
+  .green {
+    background: linear-gradient(#56ab2f, #a8e063) !important;
+  }
+
+  .bigdiv {
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .timetable {
+    display: flex;
+    flex-direction: column;
+    background-color: aqua;
+    width: 250px;
+    border-radius: 10px;
+    margin-left: 30px;
+
+    transition: transform 1s;
+  }
+
+  p {
+    font-family: Adamina;
+  }
+
+  .todo {
+    background-color: aquamarine;
+    width: 250px;
+    border-radius: 10px;
+    transition: transform 1s;
+    margin-right: 30px;
+  }
+  .ttdivclasses {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+
+    background-color: lightgray;
+  }
+  .tododivclasses {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+
+    background-color: lightgray;
+  }
+
+  .tododivclasses:hover,
+  .ttdivclasses:hover {
+    background-color: #556270;
+  }
+  .center {
+    display: flex;
+    flex-direction: column;
+
+    justify-content: space-evenly;
+  }
+
+  .terminal {
+    margin-top: 200px;
+  }
+
+  .search {
+    height: 40px;
+    background: lightsalmon;
+    display: flex;
+    justify-content: center;
+  }
+  .lectures {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-top: 10px;
+    background-color: lightsalmon;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 10px;
+    font-family: Abel;
+  }
+
+  .todotasks {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    background-color: lightsalmon;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 10px;
+  }
+
+  .lecnameclasses,
+  .lectimeclasses {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .timetable1 {
+    transform: translate(-200px);
+  }
+
+  .todo1 {
+    transform: translate(200px);
+  }
+</style>
